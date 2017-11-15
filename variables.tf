@@ -23,6 +23,12 @@ variable "alb_domain" {
 }
 
 # optional
+variable "record_name" {
+  description = "DNS Record name"
+  type        = "string"
+  default     = ""
+}
+
 variable "bare_redirect_domain_name" {
   type        = "string"
   default     = ""
