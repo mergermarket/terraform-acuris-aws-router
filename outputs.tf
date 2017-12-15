@@ -3,5 +3,5 @@ output "default_target_group_arn" {
 }
 
 output "dns_name" {
-  value = "${module.alb.fqdn}"
+  value = "${module.dns_record.fqdn}"
 }
