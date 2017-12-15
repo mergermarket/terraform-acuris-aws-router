@@ -19,22 +19,6 @@ module "router" {
   env             = "${var.env}"
   component       = "${var.component}"
   platform_config = "${var.platform_config}"
-
-  # optional
-  # backend_ip = "1.1.1.1"
-}
-
-module "router_timeouts" {
-  source = "../.."
-
-  alb_domain            = "${var.alb_domain}"
-  team                  = "${var.team}"
-  env                   = "${var.env}"
-  component             = "${var.component}"
-  platform_config       = "${var.platform_config}"
-  connect_timeout       = "${var.connect_timeout}"
-  first_byte_timeout    = "${var.first_byte_timeout}"
-  between_bytes_timeout = "${var.between_bytes_timeout}"
 }
 
 # variables
@@ -47,28 +31,6 @@ variable "env" {}
 
 variable "component" {}
 
-variable "backend_ip" {
-  default = "404"
-}
-
 variable "platform_config" {
   type = "map"
-}
-
-variable "connect_timeout" {
-  type        = "string"
-  description = ""
-  default     = 5000
-}
-
-variable "first_byte_timeout" {
-  type        = "string"
-  description = ""
-  default     = 60000
-}
-
-variable "between_bytes_timeout" {
-  type        = "string"
-  description = ""
-  default     = 30000
 }

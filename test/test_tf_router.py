@@ -64,10 +64,7 @@ class TestTFRouter(unittest.TestCase):
 
     def _target_module(self, target):
         submodules = [
-            "404_container_definition",
-            "haproxy_proxy_container_definition",
             "default_backend_task_definition",
-            "default_backend_ecs_service",
             "alb"
         ]
         return [
@@ -88,121 +85,14 @@ class TestTFRouter(unittest.TestCase):
                 self.base_path
             ),
             '-no-color',
-            '-target=module.router.module.default_backend_ecs_service', # noqa
-            '-target=module.router.module.404_container_definition', # noqa
-            '-target=module.router.module.haproxy_proxy_container_definition', # noqa
-            '-target=module.router.module.default_backend_task_definition', # noqa
-            '-target=module.router.module.default_backend_ecs_service', # noqa
             '-target=module.router.module.alb.aws_alb.alb', # noqa
         ] + [self.module_path], env=self._env_for_check_output(),
         cwd=self.workdir).decode('utf-8')
 
         # Then
         assert """
-Plan: 12 to add, 0 to change, 0 to destroy.
+Plan: 2 to add, 0 to change, 0 to destroy.
         """.strip() in output
-
-    @given(fixed_dictionaries({
-        'environment': text(alphabet=ascii_lowercase, min_size=1),
-        'component': text(alphabet=ascii_lowercase+'-', min_size=1).filter(
-            lambda c: len(c.replace('-', ''))
-        ),
-        'team': text(alphabet=ascii_lowercase+'-', min_size=1).filter(
-            lambda c: len(c.replace('-', ''))
-        ),
-    }))
-    @example({
-        'environment': 'live',
-        'component': 'a'*21,
-        'team': 'kubric',
-    })
-    def test_create_default_404_service_target_group(self, fixtures):
-        # When
-        env = fixtures['environment']
-        component = fixtures['component']
-        team = fixtures['team']
-        output = check_output([
-            'terraform',
-            'plan',
-            '-var', 'env={}'.format(env),
-            '-var', 'component={}'.format(component),
-            '-var', 'team={}'.format(team),
-            '-var', 'alb_domain=domain.com',
-            '-var-file={}/test/platform-config/eu-west-1.json'.format(
-                self.base_path
-            ),
-            '-no-color',
-            '-target=module.router.module.default_backend_ecs_service', # noqa
-        ] + [self.module_path], env=self._env_for_check_output(),
-        cwd=self.workdir).decode('utf-8')
-
-        expected_name = re.sub(
-            '^-+|-+$', '',
-            '{}-{}'.format(env, component)[0:24]
-        )
-
-        # Then
-        assert re.search(template_to_re("""
-  + module.router.module.default_backend_ecs_service.aws_alb_target_group.target_group
-      id:                                        <computed>
-      arn:                                       <computed>
-      arn_suffix:                                <computed>
-      deregistration_delay:                      "10"
-      health_check.#:                            "1"
-      health_check.{{ident}}.healthy_threshold:          "2"
-      health_check.{{ident}}.interval:                   "5"
-      health_check.{{ident}}.matcher:                    "200-299"
-      health_check.{{ident}}.path:                       "/internal/healthcheck"
-      health_check.{{ident}}.port:                       "traffic-port"
-      health_check.{{ident}}.protocol:                   "HTTP"
-      health_check.{{ident}}.timeout:                    "4"
-      health_check.{{ident}}.unhealthy_threshold:        "2"
-      name:                                      "{}-default"
-      port:                                      "31337"
-      protocol:                                  "HTTP"
-      stickiness.#:                              <computed>
-      vpc_id:                                    "vpc-12345678"
-        """.format(expected_name).strip()), output) # noqa
-
-    def test_create_default_404_service_ecs_service(self):
-        # When
-        output = check_output([
-            'terraform',
-            'plan',
-            '-var', 'env=foo',
-            '-var', 'component=foobar',
-            '-var', 'team=foobar',
-            '-var', 'alb_domain=domain.com',
-            '-var-file={}/test/platform-config/eu-west-1.json'.format(
-                self.base_path
-            ),
-            '-no-color',
-            '-target=module.router.module.default_backend_ecs_service.aws_ecs_service.service', # noqa
-        ] + [self.module_path], env=self._env_for_check_output(),
-        cwd=self.workdir).decode('utf-8')
-
-        assert """
-  + module.router.module.default_backend_ecs_service.aws_ecs_service.service
-      id:                                        <computed>
-      cluster:                                   "default"
-      deployment_maximum_percent:                "200"
-      deployment_minimum_healthy_percent:        "100"
-      desired_count:                             "1"
-        """.strip() in output # noqa
-
-        assert """
-      name:                                      "foo-foobar-default"
-        """.strip() in output # noqa
-
-        assert re.search(template_to_re("""
-      placement_strategy.{ident1}.field:       "instanceId"
-      placement_strategy.{ident1}.type:        "spread"
-        """.strip()), output) # noqa
-
-        assert re.search(template_to_re("""
-      placement_strategy.{ident}.field:       "attribute:ecs.availability-zone"
-      placement_strategy.{ident}.type:        "spread"
-        """.strip()), output) # noqa
 
     @given(fixed_dictionaries({
         'environment': text(alphabet=ascii_lowercase, min_size=1),

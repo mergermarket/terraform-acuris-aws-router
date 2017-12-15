@@ -14,7 +14,7 @@ module "alb" {
   extra_security_groups    = ["${var.platform_config["ecs_cluster.default.client_security_group"]}"]
   internal                 = "false"
   certificate_domain_name  = "${format("*.%s%s", var.env != "live" ? "dev." : "", var.alb_domain)}"
-  default_target_group_arn = "${module.aws_alb_target_group.default_target_group.arn}"
+  default_target_group_arn = "${aws_alb_target_group.default_target_group.arn}"
   access_logs_bucket       = "${lookup(var.platform_config, "elb_access_logs_bucket", "")}"
   access_logs_enabled      = "${"${lookup(var.platform_config, "elb_access_logs_bucket", "")}" == "" ? false : true}"
 
