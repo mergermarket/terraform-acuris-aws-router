@@ -26,7 +26,16 @@ module "alb" {
 }
 
 resource "aws_alb_target_group" "default_target_group" {
-  name = "${replace(replace("${var.env}-default-${var.component}", "/(.{0,32}).*/", "$1"), "/^-+|-+$/", "")}"
+  name = "${
+    length(split("", "${var.env}-default-${var.component}")) > 32 ?
+      join("", list(
+        substr("${var.env}-default-${var.component}", 0,
+          length(split("", "${var.env}-default-${var.component}")) <= 32 ? 0 : 24
+        ),
+        substr(sha1("${var.env}-default-${var.component}"), 0, 8)
+      )) :
+      "${var.env}-default-${var.component}"
+  }"
 
   # port will be set dynamically, but for some reason AWS requires a value
   port                 = "31337"
