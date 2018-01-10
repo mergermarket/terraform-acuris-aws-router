@@ -5,3 +5,7 @@ output "default_target_group_arn" {
 output "dns_name" {
   value = "${module.dns_record.fqdn}"
 }
+
+output "alb_listener_arn" {
+  value = "${module.alb.alb_listener_arn}"
+}
