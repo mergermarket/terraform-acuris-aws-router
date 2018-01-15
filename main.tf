@@ -5,10 +5,28 @@ module "default_backend_ecs_service" {
   vpc_id = "${var.platform_config["vpc"]}"
 }
 
+locals {
+  desired_load_balancer_name = "${var.env}-${var.component}" 
+  abbreviated_load_balancer_name = "${
+    join("", list(
+      substr(
+        local.desired_load_balancer_name, 0,
+        length(local.desired_load_balancer_name) >= 24 ?
+          24 : length(local.desired_load_balancer_name)
+      ),
+      substr(sha1(local.desired_load_balancer_name), 0, 8)
+    ))
+  }"
+}
+
 module "alb" {
   source = "github.com/mergermarket/tf_alb.git"
 
-  name                     = "${replace(replace(format("%s-%s", var.env, var.component), "/(.{0,25}).*/", "$1"), "/^-+|-+$/", "")}-router"
+  name                     = "${
+    length(local.desired_load_balancer_name) > 32 ?
+      local.abbreviated_load_balancer_name :
+      local.desired_load_balancer_name
+  }"
   vpc_id                   = "${var.platform_config["vpc"]}"
   subnet_ids               = ["${split(",", var.platform_config["public_subnets"])}"]
   extra_security_groups    = ["${var.platform_config["ecs_cluster.default.client_security_group"]}"]
@@ -25,16 +43,25 @@ module "alb" {
   }
 }
 
+locals {
+  desired_default_target_group_name = "${var.env}-default-${var.component}" 
+  abbreviated_default_target_group_name = "${
+    join("", list(
+      substr(
+        local.desired_default_target_group_name, 0,
+        length(local.desired_default_target_group_name) >= 24 ?
+          24 : length(local.desired_default_target_group_name)
+      ),
+      substr(sha1(local.desired_default_target_group_name), 0, 8)
+    ))
+  }"
+}
+
 resource "aws_alb_target_group" "default_target_group" {
   name = "${
-    length(split("", "${var.env}-default-${var.component}")) > 32 ?
-      join("", list(
-        substr("${var.env}-default-${var.component}", 0,
-          length(split("", "${var.env}-default-${var.component}")) <= 32 ? 0 : 24
-        ),
-        substr(sha1("${var.env}-default-${var.component}"), 0, 8)
-      )) :
-      "${var.env}-default-${var.component}"
+    length(local.desired_default_target_group_name) > 32 ?
+      local.abbreviated_default_target_group_name :
+      local.desired_default_target_group_name
   }"
 
   # port will be set dynamically, but for some reason AWS requires a value
