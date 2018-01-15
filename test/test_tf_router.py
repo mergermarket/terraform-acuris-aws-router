@@ -120,7 +120,7 @@ Plan: 2 to add, 0 to change, 0 to destroy.
             expected_name = desired_name
         else:
             expected_name = desired_name[0:24] + \
-                            sha1(desired_name).hexdigest()[0:8]
+                            sha1(desired_name.encode('utf-8')).hexdigest()[0:8]
 
         # When
         output = check_output([
