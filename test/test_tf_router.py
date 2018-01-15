@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from string import ascii_lowercase
 from subprocess import check_call, check_output
+from hashlib import sha1
 
 from hypothesis import example, given
 from hypothesis.strategies import fixed_dictionaries, text
@@ -97,7 +98,7 @@ Plan: 2 to add, 0 to change, 0 to destroy.
     @given(fixed_dictionaries({
         'environment': text(alphabet=ascii_lowercase, min_size=1),
         'component': text(alphabet=ascii_lowercase+'-', min_size=1).filter(
-            lambda c: len(c.replace('-', ''))
+            lambda c: not(c.startswith('-') or c.endswith('-'))
         ),
         'team': text(alphabet=ascii_lowercase+'-', min_size=1).filter(
             lambda c: len(c.replace('-', ''))
@@ -114,10 +115,12 @@ Plan: 2 to add, 0 to change, 0 to destroy.
         component = fixtures['component']
         team = fixtures['team']
 
-        expected_name = re.sub(
-            '^-+|-+$', '',
-            '{}-{}'.format(env, component)[0:25]
-        )
+        desired_name = '{}-{}'.format(env, component)
+        if len(desired_name) <= 32:
+            expected_name = desired_name
+        else:
+            expected_name = desired_name[0:24] + \
+                            sha1(desired_name.encode('utf-8')).hexdigest()[0:8]
 
         # When
         output = check_output([
@@ -148,7 +151,7 @@ Plan: 2 to add, 0 to change, 0 to destroy.
       idle_timeout:                          "60"
       internal:                              "false"
       ip_address_type:                       <computed>
-      name:                                  "{}-router"
+      name:                                  "{}"
       security_groups.#:                     <computed>
       subnets.#:                             "3"
       subnets.{{ident1}}:                    "subnet-55555555"
@@ -228,24 +231,23 @@ Plan: 2 to add, 0 to change, 0 to destroy.
       egress.{ident1}.self:                 "false"
       egress.{ident1}.to_port:              "0"
       ingress.#:                             "2"
-      ingress.2214680975.cidr_blocks.#:      "1"
-      ingress.2214680975.cidr_blocks.0:      "0.0.0.0/0"
-      ingress.2214680975.from_port:          "80"
-      ingress.2214680975.ipv6_cidr_blocks.#: "0"
-      ingress.2214680975.protocol:           "tcp"
-      ingress.2214680975.security_groups.#:  "0"
-      ingress.2214680975.self:               "false"
-      ingress.2214680975.to_port:            "80"
-      ingress.2617001939.cidr_blocks.#:      "1"
-      ingress.2617001939.cidr_blocks.0:      "0.0.0.0/0"
-      ingress.2617001939.from_port:          "443"
-      ingress.2617001939.ipv6_cidr_blocks.#: "0"
-      ingress.2617001939.protocol:           "tcp"
-      ingress.2617001939.security_groups.#:  "0"
-      ingress.2617001939.self:               "false"
-      ingress.2617001939.to_port:            "443"
+      ingress.{ident2}.cidr_blocks.#:      "1"
+      ingress.{ident2}.cidr_blocks.0:      "0.0.0.0/0"
+      ingress.{ident2}.from_port:          "80"
+      ingress.{ident2}.ipv6_cidr_blocks.#: "0"
+      ingress.{ident2}.protocol:           "tcp"
+      ingress.{ident2}.security_groups.#:  "0"
+      ingress.{ident2}.self:               "false"
+      ingress.{ident2}.to_port:            "80"
+      ingress.{ident3}.cidr_blocks.#:      "1"
+      ingress.{ident3}.cidr_blocks.0:      "0.0.0.0/0"
+      ingress.{ident3}.from_port:          "443"
+      ingress.{ident3}.ipv6_cidr_blocks.#: "0"
+      ingress.{ident3}.protocol:           "tcp"
+      ingress.{ident3}.security_groups.#:  "0"
+      ingress.{ident3}.self:               "false"
+      ingress.{ident3}.to_port:            "443"
       name:                                  <computed>
       owner_id:                              <computed>
       vpc_id:                                "vpc-12345678"
-
         """.strip()), output) # noqa
