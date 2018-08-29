@@ -32,8 +32,7 @@ variable "platform_config" {
       ecs_cluster.default.client_security_group: "sg-00000000",
       ecs_cluster.default.security_group: "sg-11111111",
       vpc: "vpc-12345678",
-      public_subnets: "subnet-00000000,subnet-11111111,subnet-22222222",
-      logentries_fastly_logset_id: "111-222-333-444-555"
+      public_subnets: "subnet-00000000,subnet-11111111,subnet-22222222"
     }
   }
 }
