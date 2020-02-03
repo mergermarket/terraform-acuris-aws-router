@@ -1,5 +1,9 @@
-# configure provider to not try too hard talking to AWS API
+terraform {
+  required_version = ">= 0.12"
+}
+
 provider "aws" {
+  version                     = ">= 2.15"
   skip_credentials_validation = true
   skip_metadata_api_check     = true
   skip_get_ec2_platforms      = true
@@ -14,23 +18,15 @@ provider "aws" {
 module "router" {
   source = "../.."
 
-  alb_domain      = "${var.alb_domain}"
-  team            = "${var.team}"
-  env             = "${var.env}"
-  component       = "${var.component}"
-  platform_config = "${var.platform_config}"
-}
-
-# variables
-
-variable "alb_domain" {}
-
-variable "team" {}
-
-variable "env" {}
-
-variable "component" {}
-
-variable "platform_config" {
-  type = "map"
+  alb_domain = "domain.com"
+  team       = "foobar"
+  env        = "dev"
+  component  = "foobar"
+  platform_config = {
+    "public_subnets" : "subnet-123479de3,subnet-123479de3"
+    "vpc" : "vpc-id"
+    "ecs_cluster.default.client_security_group" : "sg-id"
+  }
+  run_data = false
+  zone_id  = "TESTZONEID"
 }

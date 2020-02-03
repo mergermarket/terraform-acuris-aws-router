@@ -1,11 +1,12 @@
 Router terraform module
 ================================
 
-[![Build Status](https://travis-ci.org/mergermarket/tf_router.svg?branch=master)](https://travis-ci.org/mergermarket/tf_router)
+[![Build Status](https://travis-ci.org/mergermarket/terraform-acuris-aws-router.svg?branch=master)](https://travis-ci.org/mergermarket/terraform-acuris-aws-router)
 
 This modules creates components needed to be able to expose your application(s) to the public, but does not include Fastly configuration.
 
 When included and configured this module will:
+
 - create public ALB
 - create a HTTPS Listener on default ALB with default target group
 - output default target group ARN
@@ -18,9 +19,10 @@ Module Input Variables
 See `/variables.tf`.
 
 Usage
------
-```hcl
 
+-----
+
+```hcl
 # the below platform_config map can be passed as a TF var-file (eg. JSON file)
 variable "platform_config" {
   type = "map"
@@ -38,12 +40,12 @@ variable "platform_config" {
 }
 
 module "router" {
-  source = "github.com/mergermarket/tf_router"
+  source = "mergermarket/aws-router/acuris"
 
   alb_domain      = "domain.com"
   env             = "ci"
   component       = "wall"
-  platform_config = "${var.platform_config}"
+  platform_config = var.platform_config
 }
 ```
 
