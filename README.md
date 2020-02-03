@@ -40,7 +40,8 @@ variable "platform_config" {
 }
 
 module "router" {
-  source = "mergermarket/aws-router/acuris"
+  source  = "mergermarket/aws-router/acuris"
+  version = "2.0.0"
 
   alb_domain      = "domain.com"
   env             = "ci"
